@@ -10,8 +10,25 @@ use std::io;
 use jack::prelude::{AsyncClient, Client, JackControl, MidiOutPort,
                     MidiOutSpec, ClosureProcessHandler, ProcessScope, RawMidi, client_options, JackFrames};
 use time_calc::{
-    SampleHz, Bpm, Beats,
+    SampleHz, Bpm, Beats, TimeSig
 };
+
+struct PatternPlayer {
+    samples_per_step: JackFrames,
+    position: JackFrames,
+    pattern: Vec<u8>,
+}
+
+impl PatternPlayer {
+    fn new(bpm: &Bpm, sample_frequency : SampleHz, time_signature : &TimeSig, steps_per_bar: usize, pattern: Vec<u8>) -> PatternPlayer {
+
+        return PatternPlayer{
+            samples_per_step: 0,
+            position: 0,
+            pattern: pattern
+        };
+    }
+}
 
 fn main() {
     // open client
@@ -32,6 +49,11 @@ fn main() {
     let mut maker = client.register_port("midi_out", MidiOutSpec::default()).unwrap();
 
     let mut next_beat : JackFrames = 0;
+
+    let time_signature = TimeSig{ top: 4, bottom: 4 };
+    let kick_drum_pattern : Vec<u8> = vec![127, 127, 127, 127];
+    let snare_pattern     : Vec<u8> = vec![0  , 127, 0  , 127];
+    
     
     let cback = move |_: &Client, ps: &ProcessScope| -> JackControl {
         
