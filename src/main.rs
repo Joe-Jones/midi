@@ -10,7 +10,7 @@ use std::io;
 use jack::prelude::{AsyncClient, Client, JackControl, MidiOutPort,
                     MidiOutSpec, ClosureProcessHandler, ProcessScope, RawMidi, client_options, JackFrames};
 use time_calc::{
-    SampleHz, Bpm, Beats, TimeSig
+    SampleHz, Bpm, Beats, Bars, TimeSig
 };
 
 struct PatternPlayer {
@@ -30,6 +30,17 @@ impl PatternPlayer {
     }
 }
 
+struct Pattern {
+    steps_per_bar: usize,
+    pattern: Vec<u8>,
+}
+
+impl Pattern {
+
+    
+
+}
+
 fn main() {
     // open client
     let (client, _status) = Client::new("kick-drum", client_options::NO_START_SERVER)
@@ -43,7 +54,7 @@ fn main() {
 
     let samples_per_beat : JackFrames = u32::try_from(Beats(1).samples(bpm, sample_frequency))
         .map_err( |err| format!("Samples per beat could not be fitted into a u32! the error was {}", err.to_string())).unwrap();
-    println!("Samples per beat: {}", samples_per_beat);
+    // println!("Samples per beat: {}", samples_per_beat);
     
     // make a midi port
     let mut maker = client.register_port("midi_out", MidiOutSpec::default()).unwrap();
@@ -52,8 +63,13 @@ fn main() {
 
     let time_signature = TimeSig{ top: 4, bottom: 4 };
     let kick_drum_pattern : Vec<u8> = vec![127, 127, 127, 127];
-    let snare_pattern     : Vec<u8> = vec![0  , 127, 0  , 127];
-    
+    let snare_drum_pattern     : Vec<u8> = vec![0  , 127, 0  , 127];
+
+    let kick_drum = Pattern{ steps_per_bar: 4, pattern: kick_drum_pattern };
+    let snare_drum = Pattern{ steps_per_bar: 4, pattern: snare_drum_pattern };
+        
+    let samples_per_bar : JackFrames = u32::try_from(Bars(1).samples(bpm, time_signature, sample_frequency))
+        .map_err( |err| format!("Samples per bar could not be fitted into a u32! the error was {}", err.to_string())).unwrap();
     
     let cback = move |_: &Client, ps: &ProcessScope| -> JackControl {
         
