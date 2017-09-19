@@ -34,6 +34,7 @@ impl PatternPlayer {
 struct Pattern {
     steps_per_bar: u32,
     pattern: Vec<u8>,
+    note: u8,
 }
 
 impl Pattern {
@@ -41,10 +42,15 @@ impl Pattern {
     fn next_event(&self, position: f64) -> Result<Option<(f64, u8)>, String> {
         let relative_to_pattern = position * f64::from(self.steps_per_bar);
         let index = relative_to_pattern.ceil() as usize;
-        //let index : usize = try!(usize::try_from(relative_to_pattern.ceil()).map_err( |err| format!("Error in the next_event method of pattern, {}", err.to_string())));
-           
+        let mut n = index;
+        while n < self.pattern.len() {
+            if self.pattern[n] > 0 {
+                return Ok(Some((n as f64 / self.steps_per_bar as f64, self.pattern[n])));
+            }
+            n += 1;
+        }
         
-        Ok(Some((0.0, 0)))
+        Ok(None)
     }
 
 }
@@ -73,16 +79,28 @@ fn main() {
     let kick_drum_pattern : Vec<u8> = vec![127, 127, 127, 127];
     let snare_drum_pattern     : Vec<u8> = vec![0  , 127, 0  , 127];
 
-    let kick_drum = Pattern{ steps_per_bar: 4, pattern: kick_drum_pattern };
-    let snare_drum = Pattern{ steps_per_bar: 4, pattern: snare_drum_pattern };
+    let kick_drum = Pattern{ steps_per_bar: 4, pattern: kick_drum_pattern, 36 };
+    let snare_drum = Pattern{ steps_per_bar: 4, pattern: snare_drum_pattern, 37 };
         
-    let samples_per_bar : JackFrames = u32::try_from(Bars(1).samples(bpm, time_signature, sample_frequency))
+    let frames_per_bar : JackFrames = u32::try_from(Bars(1).samples(bpm, time_signature, sample_frequency))
         .map_err( |err| format!("Samples per bar could not be fitted into a u32! the error was {}", err.to_string())).unwrap();
+
+    //let mut next_bar : JackFrames = 0;
+    let mut frames_into_bar = 0;
+    let mut cursor : Jackframes = 0;
     
     let cback = move |_: &Client, ps: &ProcessScope| -> JackControl {
         
         let mut put_p = MidiOutPort::new(&mut maker, ps);
 
+        while cursor < ps.nframes() {
+            let (time, velocity) = kick_drum.next_event(frames_into_bar as f64 / frames_per_bar as f64);
+            let 
+        }
+
+        cursor -= ps.n_frames();
+        
+                
         while next_beat < ps.n_frames() {
             put_p.write(&RawMidi {
                 time: next_beat,
