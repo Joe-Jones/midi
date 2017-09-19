@@ -6,6 +6,7 @@ extern crate time_calc;
 use std::convert::TryFrom;
 use std::f64;
 use std::u32;
+use std::usize;
 use std::io;
 use jack::prelude::{AsyncClient, Client, JackControl, MidiOutPort,
                     MidiOutSpec, ClosureProcessHandler, ProcessScope, RawMidi, client_options, JackFrames};
@@ -31,13 +32,20 @@ impl PatternPlayer {
 }
 
 struct Pattern {
-    steps_per_bar: usize,
+    steps_per_bar: u32,
     pattern: Vec<u8>,
 }
 
 impl Pattern {
 
-    
+    fn next_event(&self, position: f64) -> Result<Option<(f64, u8)>, String> {
+        let relative_to_pattern = position * f64::from(self.steps_per_bar);
+        let index = relative_to_pattern.ceil() as usize;
+        //let index : usize = try!(usize::try_from(relative_to_pattern.ceil()).map_err( |err| format!("Error in the next_event method of pattern, {}", err.to_string())));
+           
+        
+        Ok(Some((0.0, 0)))
+    }
 
 }
 
