@@ -55,6 +55,23 @@ impl Pattern {
 
 }
 
+struct PatternCursor {
+    position: usize,
+}
+
+fn init_patern_cursor(cursor: &mut PatternCursor) {
+    cursor.position = 0;
+}
+
+fn next_event(pattern: &Pattern, cursor: & mut PatternCursor) -> Option<(f64, u8)> {
+    None
+}
+
+fn advance(cursor: &mut PatternCursor) {
+
+}
+
+
 fn main() {
     // open client
     let (client, _status) = Client::new("kick-drum", client_options::NO_START_SERVER)
@@ -79,23 +96,23 @@ fn main() {
     let kick_drum_pattern : Vec<u8> = vec![127, 127, 127, 127];
     let snare_drum_pattern     : Vec<u8> = vec![0  , 127, 0  , 127];
 
-    let kick_drum = Pattern{ steps_per_bar: 4, pattern: kick_drum_pattern, 36 };
-    let snare_drum = Pattern{ steps_per_bar: 4, pattern: snare_drum_pattern, 37 };
+    let kick_drum = Pattern{ steps_per_bar: 4, pattern: kick_drum_pattern, note: 36 };
+    let snare_drum = Pattern{ steps_per_bar: 4, pattern: snare_drum_pattern, note: 37 };
         
     let frames_per_bar : JackFrames = u32::try_from(Bars(1).samples(bpm, time_signature, sample_frequency))
         .map_err( |err| format!("Samples per bar could not be fitted into a u32! the error was {}", err.to_string())).unwrap();
 
     //let mut next_bar : JackFrames = 0;
     let mut frames_into_bar = 0;
-    let mut cursor : Jackframes = 0;
+    let mut cursor : JackFrames = 0;
     
     let cback = move |_: &Client, ps: &ProcessScope| -> JackControl {
         
         let mut put_p = MidiOutPort::new(&mut maker, ps);
 
-        while cursor < ps.nframes() {
-            let (time, velocity) = kick_drum.next_event(frames_into_bar as f64 / frames_per_bar as f64);
-            let 
+        while cursor < ps.n_frames() {
+            //let (time, velocity) = unwrap(kick_drum.next_event(frames_into_bar as f64 / frames_per_bar as f64));
+            //let 
         }
 
         cursor -= ps.n_frames();
